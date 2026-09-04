@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Usage
+
+            ```hcl
+            module "storage" {
+              source  = "pomo-studio/ssr-storage/aws"
+              version = "~> 0.1"
+
+              providers = {
+                aws    = aws
+                aws.dr = aws.dr
+              }
+
+              app_name                         = "my-app"
+              account_id                       = "123456789012"
+              primary_region                   = "us-east-1"
+              dr_region                        = "us-west-2"
+              enable_dr                        = false
+              cloudfront_oai_canonical_user_id = "examplecanonicaluserid"
+            }
+            ```
+
+            ## Full Documentation
+
+            See [README.md](https://github.com/pomo-studio/terraform-aws-ssr-storage/blob/${{ steps.get_version.outputs.VERSION }}/README.md) for complete documentation.
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') || contains(steps.get_version.outputs.VERSION, 'rc') }}
