@@ -93,6 +93,20 @@ jobs:
         working-directory: ${{ matrix.dir }}
         run: rm -f ci_providers.tf
 
+  docs:
+    name: Docs Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: terraform-docs check
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          args: --check
+
   tflint:
     name: Lint
     runs-on: ubuntu-latest
