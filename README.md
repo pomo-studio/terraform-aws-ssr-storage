@@ -1,13 +1,75 @@
 # terraform-aws-ssr-storage
 
-[![Terraform Validation](https://github.com/pomo-studio/terraform-aws-ssr-storage/actions/workflows/terraform.yml/badge.svg)](https://github.com/pomo-studio/terraform-aws-ssr-storage/actions/workflows/terraform.yml)
-[![Terraform Registry](https://img.shields.io/badge/terraform-registry-844FBA?logo=terraform)](https://registry.terraform.io/modules/pomo-studio/ssr-storage/aws)
+The S3 buckets a serverless SSR stack needs: static assets readable by CloudFront, and
+Lambda deployment packages, optionally replicated to a second region.
 
-- [Changelog](CHANGELOG.md)
+Composed by [`serverless-ssr`](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws).
 
-Reusable S3 storage layer for SSR stacks.
+## What it creates
 
-This module provisions Lambda deployment buckets and static asset buckets with optional DR replication.
+| Bucket | Purpose |
+|---|---|
+| Static assets | Built front-end assets, read by CloudFront through an origin access identity |
+| Static assets (DR) | Replica in the DR region, serving as a CloudFront failover origin |
+| Lambda deployments | Deployment packages for the primary region |
+| Lambda deployments (DR) | Deployment packages for the DR region |
+
+All buckets block public access. Versioning is enabled, and cross-region replication is
+configured on the static assets bucket when DR is enabled.
+
+## Design decisions
+
+**Public access is blocked on every bucket.** CloudFront reads the static assets through
+an origin access identity, so nothing needs to be world-readable. The bucket policy grants
+exactly that identity and nothing else.
+
+**Replication needs versioning, so versioning is always on.** That also means objects are
+retained after deletion — worth knowing when estimating storage cost for a bucket that
+receives a full asset set on every deploy.
+
+## Usage
+
+```hcl
+module "storage" {
+  source  = "pomo-studio/ssr-storage/aws"
+  version = "~> 0.2"
+
+  providers = {
+    aws    = aws.primary
+    aws.dr = aws.dr
+  }
+
+  app_name       = "my-app"
+  account_id     = data.aws_caller_identity.current.account_id
+  primary_region = "us-east-1"
+  dr_region      = "us-west-2"
+  enable_dr      = true
+
+  cloudfront_oai_canonical_user_id = module.cloudfront_support.oai_s3_canonical_user_id
+
+  common_tags = { Project = "my-app" }
+}
+```
+
+Both providers must be passed even when `enable_dr = false` — provider aliases are
+resolved at plan time regardless. Point them at the same region if you do not want a
+second one.
+
+## Notes
+
+- Bucket names are deterministic, with no random suffix, which matters if you scope IAM
+  policies to them:
+
+  | Bucket | Name |
+  |---|---|
+  | Static assets | `<app_name>-static-<account_id>` |
+  | Static assets (DR) | `<app_name>-static-<account_id>-dr` |
+  | Lambda deployments | `<app_name>-lambda-deployments-<account_id>-<region>` |
+
+  Note the static assets buckets do not carry a region, so `app_name` must be unique per
+  account.
+- Deleting the module leaves versioned objects behind. Empty the buckets first, including
+  old versions, or the destroy fails.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
