@@ -65,14 +65,14 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_lambda_deployments_dr_arn"></a> [lambda\_deployments\_dr\_arn](#output\_lambda\_deployments\_dr\_arn) | n/a |
-| <a name="output_lambda_deployments_dr_id"></a> [lambda\_deployments\_dr\_id](#output\_lambda\_deployments\_dr\_id) | n/a |
-| <a name="output_lambda_deployments_primary_arn"></a> [lambda\_deployments\_primary\_arn](#output\_lambda\_deployments\_primary\_arn) | n/a |
-| <a name="output_lambda_deployments_primary_id"></a> [lambda\_deployments\_primary\_id](#output\_lambda\_deployments\_primary\_id) | n/a |
-| <a name="output_static_assets_arn"></a> [static\_assets\_arn](#output\_static\_assets\_arn) | n/a |
-| <a name="output_static_assets_dr_arn"></a> [static\_assets\_dr\_arn](#output\_static\_assets\_dr\_arn) | n/a |
-| <a name="output_static_assets_dr_id"></a> [static\_assets\_dr\_id](#output\_static\_assets\_dr\_id) | n/a |
-| <a name="output_static_assets_dr_regional_domain_name"></a> [static\_assets\_dr\_regional\_domain\_name](#output\_static\_assets\_dr\_regional\_domain\_name) | n/a |
-| <a name="output_static_assets_id"></a> [static\_assets\_id](#output\_static\_assets\_id) | n/a |
-| <a name="output_static_assets_regional_domain_name"></a> [static\_assets\_regional\_domain\_name](#output\_static\_assets\_regional\_domain\_name) | n/a |
+| <a name="output_lambda_deployments_dr_arn"></a> [lambda\_deployments\_dr\_arn](#output\_lambda\_deployments\_dr\_arn) | ARN of the DR-region Lambda deployment bucket. Null when DR is disabled. |
+| <a name="output_lambda_deployments_dr_id"></a> [lambda\_deployments\_dr\_id](#output\_lambda\_deployments\_dr\_id) | Name of the DR-region bucket holding Lambda deployment packages. Null when DR is disabled. |
+| <a name="output_lambda_deployments_primary_arn"></a> [lambda\_deployments\_primary\_arn](#output\_lambda\_deployments\_primary\_arn) | ARN of the primary-region Lambda deployment bucket. |
+| <a name="output_lambda_deployments_primary_id"></a> [lambda\_deployments\_primary\_id](#output\_lambda\_deployments\_primary\_id) | Name of the primary-region bucket holding Lambda deployment packages. |
+| <a name="output_static_assets_arn"></a> [static\_assets\_arn](#output\_static\_assets\_arn) | ARN of the static assets bucket. |
+| <a name="output_static_assets_dr_arn"></a> [static\_assets\_dr\_arn](#output\_static\_assets\_dr\_arn) | ARN of the DR-region static assets replica bucket. Null when DR is disabled. |
+| <a name="output_static_assets_dr_id"></a> [static\_assets\_dr\_id](#output\_static\_assets\_dr\_id) | Name of the DR-region static assets replica bucket. Null when DR is disabled. |
+| <a name="output_static_assets_dr_regional_domain_name"></a> [static\_assets\_dr\_regional\_domain\_name](#output\_static\_assets\_dr\_regional\_domain\_name) | Regional domain name of the DR static assets bucket, used as a CloudFront failover origin. |
+| <a name="output_static_assets_id"></a> [static\_assets\_id](#output\_static\_assets\_id) | Name of the bucket serving static assets. |
+| <a name="output_static_assets_regional_domain_name"></a> [static\_assets\_regional\_domain\_name](#output\_static\_assets\_regional\_domain\_name) | Regional domain name of the static assets bucket, used as a CloudFront origin. |
 <!-- END_TF_DOCS -->
