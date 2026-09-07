@@ -1,33 +1,26 @@
 # terraform-aws-ssr-storage
 
-The S3 buckets a serverless SSR stack needs: static assets readable by CloudFront, and
-Lambda deployment packages, optionally replicated to a second region.
+The S3 buckets behind a server-rendered site: your built front-end assets, and the
+deployment packages your Lambdas run from.
 
-Composed by [`serverless-ssr`](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws).
+**You probably want [serverless-ssr](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws) instead.**
+It creates these buckets and everything that reads from them. Come here if you are
+assembling the parts yourself.
 
-## What it creates
+## What you get
 
-| Bucket | Purpose |
+| Bucket | Holds |
 |---|---|
-| Static assets | Built front-end assets, read by CloudFront through an origin access identity |
-| Static assets (DR) | Replica in the DR region, serving as a CloudFront failover origin |
+| Static assets | Your built front-end files, read by CloudFront |
+| Static assets (DR) | A replica in your second region, for failover |
 | Lambda deployments | Deployment packages for the primary region |
-| Lambda deployments (DR) | Deployment packages for the DR region |
+| Lambda deployments (DR) | Deployment packages for the second region |
 
-All buckets block public access. Versioning is enabled, and cross-region replication is
-configured on the static assets bucket when DR is enabled.
+Nothing is public. CloudFront reads the assets through an origin access identity, and the
+bucket policy grants that identity and nobody else. Versioning is on everywhere, and the
+static assets bucket replicates to the DR region when you enable it.
 
-## Design decisions
-
-**Public access is blocked on every bucket.** CloudFront reads the static assets through
-an origin access identity, so nothing needs to be world-readable. The bucket policy grants
-exactly that identity and nothing else.
-
-**Replication needs versioning, so versioning is always on.** That also means objects are
-retained after deletion — worth knowing when estimating storage cost for a bucket that
-receives a full asset set on every deploy.
-
-## Usage
+## Using it
 
 ```hcl
 module "storage" {
@@ -51,25 +44,28 @@ module "storage" {
 }
 ```
 
-Both providers must be passed even when `enable_dr = false` — provider aliases are
-resolved at plan time regardless. Point them at the same region if you do not want a
-second one.
+Pass both providers even when `enable_dr = false`. Terraform resolves provider aliases
+before it knows whether you wanted the second region, so point them at the same place if
+you only want one.
 
-## Notes
+## Worth knowing
 
-- Bucket names are deterministic, with no random suffix, which matters if you scope IAM
-  policies to them:
+**Bucket names are predictable, with no random suffix**, which is what lets you scope IAM
+policies to them:
 
-  | Bucket | Name |
-  |---|---|
-  | Static assets | `<app_name>-static-<account_id>` |
-  | Static assets (DR) | `<app_name>-static-<account_id>-dr` |
-  | Lambda deployments | `<app_name>-lambda-deployments-<account_id>-<region>` |
+| Bucket | Name |
+|---|---|
+| Static assets | `<app_name>-static-<account_id>` |
+| Static assets (DR) | `<app_name>-static-<account_id>-dr` |
+| Lambda deployments | `<app_name>-lambda-deployments-<account_id>-<region>` |
 
-  Note the static assets buckets do not carry a region, so `app_name` must be unique per
-  account.
-- Deleting the module leaves versioned objects behind. Empty the buckets first, including
-  old versions, or the destroy fails.
+The static assets names carry no region, so `app_name` has to be unique within your
+account.
+
+**Versioning is always on, because replication requires it.** Old object versions stay
+after a delete, which is worth remembering if you push a full set of assets on every
+deploy — and it means you have to empty the buckets, versions included, before Terraform
+can destroy them.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
