@@ -64,8 +64,13 @@ account.
 
 **Versioning is always on, because replication requires it.** Old object versions stay
 after a delete, which is worth remembering if you push a full set of assets on every
-deploy — and it means you have to empty the buckets, versions included, before Terraform
+deploy: and it means you have to empty the buckets, versions included, before Terraform
 can destroy them.
+
+## Reference
+
+<details>
+<summary>Reference</summary>
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -134,3 +139,5 @@ No modules.
 | <a name="output_static_assets_id"></a> [static\_assets\_id](#output\_static\_assets\_id) | Name of the bucket serving static assets. |
 | <a name="output_static_assets_regional_domain_name"></a> [static\_assets\_regional\_domain\_name](#output\_static\_assets\_regional\_domain\_name) | Regional domain name of the static assets bucket, used as a CloudFront origin. |
 <!-- END_TF_DOCS -->
+
+</details>
