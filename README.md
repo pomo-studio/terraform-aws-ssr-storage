@@ -9,9 +9,9 @@ The S3 buckets behind a server-rendered site: your built front-end assets, and t
 
 ## When to use it
 
-Use this component when you are assembling the SSR delivery stack yourself. It creates the buckets that hold built assets and Lambda packages, private, versioned, and replicated to a second region when you enable DR.
+Create the S3 buckets a delivered site needs: one for built static assets, read by CloudFront, and per-region buckets for Lambda deployment packages. Everything is private and versioned, and the assets bucket replicates to the second region when you enable DR.
 
-If you want a working site rather than the parts, use [`pomo-studio/serverless-ssr/aws`](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws); it creates these buckets and everything that reads from them.
+Use it for any site that serves built assets through a CDN and deploys functions from S3. It is not specific to server rendering, and it is the storage layer of the [Serverless SSR blueprint](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws).
 
 ## Quickstart
 
