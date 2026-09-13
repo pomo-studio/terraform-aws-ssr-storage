@@ -1,26 +1,19 @@
 # terraform-aws-ssr-storage
 
-The S3 buckets behind a server-rendered site: your built front-end assets, and the
-deployment packages your Lambdas run from.
+[![Terraform Validation](https://github.com/pomo-studio/terraform-aws-ssr-storage/actions/workflows/terraform.yml/badge.svg)](https://github.com/pomo-studio/terraform-aws-ssr-storage/actions/workflows/terraform.yml)
+[![Terraform Registry](https://img.shields.io/badge/terraform-registry-844FBA?logo=terraform)](https://registry.terraform.io/modules/pomo-studio/ssr-storage/aws)
 
-**You probably want [serverless-ssr](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws) instead.**
-It creates these buckets and everything that reads from them. Come here if you are
-assembling the parts yourself.
+[Changelog](CHANGELOG.md)
 
-## What you get
+The S3 buckets behind a server-rendered site: your built front-end assets, and the deployment packages your Lambdas run from.
 
-| Bucket | Holds |
-|---|---|
-| Static assets | Your built front-end files, read by CloudFront |
-| Static assets (DR) | A replica in your second region, for failover |
-| Lambda deployments | Deployment packages for the primary region |
-| Lambda deployments (DR) | Deployment packages for the second region |
+## When to use it
 
-Nothing is public. CloudFront reads the assets through an origin access identity, and the
-bucket policy grants that identity and nobody else. Versioning is on everywhere, and the
-static assets bucket replicates to the DR region when you enable it.
+Use this component when you are assembling the SSR delivery stack yourself. It creates the buckets that hold built assets and Lambda packages, private, versioned, and replicated to a second region when you enable DR.
 
-## Using it
+If you want a working site rather than the parts, use [`pomo-studio/serverless-ssr/aws`](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws); it creates these buckets and everything that reads from them.
+
+## Quickstart
 
 ```hcl
 module "storage" {
@@ -44,28 +37,27 @@ module "storage" {
 }
 ```
 
-Pass both providers even when `enable_dr = false`. Terraform resolves provider aliases
-before it knows whether you wanted the second region, so point them at the same place if
-you only want one.
+## What it creates
 
-## Worth knowing
-
-**Bucket names are predictable, with no random suffix**, which is what lets you scope IAM
-policies to them:
-
-| Bucket | Name |
+| Bucket | Holds |
 |---|---|
-| Static assets | `<app_name>-static-<account_id>` |
-| Static assets (DR) | `<app_name>-static-<account_id>-dr` |
-| Lambda deployments | `<app_name>-lambda-deployments-<account_id>-<region>` |
+| Static assets | Built front-end files, read by CloudFront |
+| Static assets (DR) | A replica in your second region, for failover |
+| Lambda deployments | Deployment packages for the primary region |
+| Lambda deployments (DR) | Deployment packages for the second region |
 
-The static assets names carry no region, so `app_name` has to be unique within your
-account.
+Nothing is public. CloudFront reads the assets through an origin access identity, and the bucket policy grants that identity and nobody else.
 
-**Versioning is always on, because replication requires it.** Old object versions stay
-after a delete, which is worth remembering if you push a full set of assets on every
-deploy: and it means you have to empty the buckets, versions included, before Terraform
-can destroy them.
+## Design decisions
+
+- **Predictable bucket names.** The names carry no random suffix, so an IAM policy can scope to them: `<app_name>-static-<account_id>`, `<app_name>-static-<account_id>-dr`, and `<app_name>-lambda-deployments-<account_id>-<region>`. Because the static names carry no region, `app_name` must be unique within the account.
+- **Versioning is always on**, because replication requires it. Old object versions stay after a delete.
+- **Both providers are required**, even when `enable_dr` is false. Terraform resolves provider aliases before it knows whether you wanted the second region, so point both at the same place if you only want one.
+- **Empty before you destroy.** Because versioning is on, you have to delete all object versions before Terraform can remove a bucket.
+
+## Examples
+
+- [Basic](examples/basic/)
 
 ## Reference
 
@@ -141,3 +133,11 @@ No modules.
 <!-- END_TF_DOCS -->
 
 </details>
+
+## Support and license
+
+Part of the [pomo-studio](https://github.com/pomo-studio) Terraform components, run in production by [postmodern.](https://pomo.studio). Regenerate the reference with `terraform-docs` v0.20.0 (`terraform-docs .`); CI fails on drift.
+
+See the [contribution guide](https://github.com/pomo-studio/.github/blob/main/CONTRIBUTING.md) and [security policy](https://github.com/pomo-studio/.github/blob/main/SECURITY.md).
+
+MIT licensed. See [LICENSE](LICENSE).
