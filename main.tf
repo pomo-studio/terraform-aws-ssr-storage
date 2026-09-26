@@ -135,7 +135,8 @@ resource "aws_s3_bucket_policy" "static_assets_dr" {
 }
 
 resource "aws_iam_role" "replication" {
-  name = "${var.app_name}-s3-replication-role"
+  count = var.enable_dr ? 1 : 0
+  name  = "${var.app_name}-s3-replication-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -152,7 +153,8 @@ resource "aws_iam_role" "replication" {
 }
 
 resource "aws_iam_policy" "replication" {
-  name = "${var.app_name}-s3-replication-policy"
+  count = var.enable_dr ? 1 : 0
+  name  = "${var.app_name}-s3-replication-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -181,21 +183,39 @@ resource "aws_iam_policy" "replication" {
           "s3:ReplicateDelete",
           "s3:ReplicateTags"
         ]
-        Resource = var.enable_dr ? "${aws_s3_bucket.static_assets_dr[0].arn}/*" : ""
+        Resource = "${aws_s3_bucket.static_assets_dr[0].arn}/*"
       }
     ]
   })
 }
 
 resource "aws_iam_role_policy_attachment" "replication" {
-  role       = aws_iam_role.replication.name
-  policy_arn = aws_iam_policy.replication.arn
+  count      = var.enable_dr ? 1 : 0
+  role       = aws_iam_role.replication[0].name
+  policy_arn = aws_iam_policy.replication[0].arn
+}
+
+# The replication IAM resources were created unconditionally before v0.2.6.
+# Keep existing DR-enabled stacks on the same objects instead of replacing them.
+moved {
+  from = aws_iam_role.replication
+  to   = aws_iam_role.replication[0]
+}
+
+moved {
+  from = aws_iam_policy.replication
+  to   = aws_iam_policy.replication[0]
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.replication
+  to   = aws_iam_role_policy_attachment.replication[0]
 }
 
 resource "aws_s3_bucket_replication_configuration" "static_assets" {
   count  = var.enable_dr ? 1 : 0
   bucket = aws_s3_bucket.static_assets.id
-  role   = aws_iam_role.replication.arn
+  role   = aws_iam_role.replication[0].arn
 
   rule {
     id     = "replicate-to-dr"

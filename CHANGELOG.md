@@ -2,6 +2,13 @@
 
 All notable changes to this module are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [v0.2.6] - 2026-09-26
+
+### Fixed
+
+- `enable_dr = false` no longer fails on apply ([serverless-ssr#29](https://github.com/pomo-studio/terraform-aws-serverless-ssr/issues/29)). The replication IAM role, policy and attachment were created unconditionally, and with DR off the policy got an empty resource ARN (`MalformedPolicyDocument`). They are now gated on `enable_dr`.
+- Upgrade: `moved` blocks keep existing DR-enabled stacks on the same IAM objects (address `replication` → `replication[0]`); no replacement.
+
 ## [v0.2.5] - 2026-09-12
 
 ### Added
